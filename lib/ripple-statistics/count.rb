@@ -6,10 +6,12 @@ module Ripple
       include Ripple::Document
       property :client_data, Hash, :presence => true
 
+      def self.bucket_name; "_#{super}"; end
+
       def update_with(value)
         self.reload
         self.client_data ||= {}
-        statistic = self.client_data[Ripple.config[:client_name]] || {'average' => 0.0, 'count' => 0}
+        statistic = self.client_data[Ripple.config[:client_name]] || {'count' => 0}
         statistic['count']   = (statistic['count'] + 1)
         self.client_data[Ripple.config[:client_name]] = statistic
         self.save

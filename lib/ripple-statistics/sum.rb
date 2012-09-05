@@ -6,6 +6,8 @@ module Ripple
       include Ripple::Document
       property :client_data, Hash, :presence => true
 
+      def self.bucket_name; "_#{super}"; end
+
       def update_with(value)
         self.reload
         self.client_data ||= {}

@@ -12,11 +12,17 @@ module Ripple
       end
 
       [:average, :count, :sum].each do |operation|
-        define_method "property_#{operation}".to_sym do |value|
+        define_method "property_#{operation}".to_sym do |value, options={}|
           statistics_properties[operation] << value
           define_singleton_method "#{value}_#{operation}".to_sym do
             klass = "Ripple::Statistics::#{operation.to_s.capitalize}".constantize
-            klass.find("#{bucket_name}_#{value}_#{operation}").send(operation)
+            if(statistic = klass.find("#{bucket_name}_#{value}_#{operation}"))
+              return statistic.send(operation)
+            elsif options[:default]
+              return options[:default]
+            else
+              raise Ripple::Statistics::Error, "No statistic found, and default value not specified."
+            end
           end
         end
       end

@@ -16,3 +16,16 @@ namespace :test do
 end
 
 task :default => :test
+
+namespace(:test_purposes_only) do
+  task :create_data_points do
+    ROOT_DIR = File.dirname(__FILE__)
+
+    require File.join(ROOT_DIR,'test','environment')
+
+    data = File.readlines(File.join(ROOT_DIR,'test','fixtures','data'))[ENV['ROW'].to_i]
+    data.split(',').each do |value|
+      DataDocument.create(:value => value.to_f)
+    end
+  end
+end
