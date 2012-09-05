@@ -1,17 +1,18 @@
 require 'helper'
-require 'ripple'
 
 class DataDocument
   include Ripple::Document
-  include Ripple::Statistics::Average
+  include Ripple::Statistics
 
-  property :value, Integer, :presence => true
+  property :value, Float, :presence => true
   property_average :value
+  property_sum :value
+  property_count :value
 end
 
 class TestJsonDocument < MiniTest::Spec
   def setup
-    11..17.each do |value|
+    (11..17).each do |value|
       DataDocument.create(:value => value.to_i)
     end
   end

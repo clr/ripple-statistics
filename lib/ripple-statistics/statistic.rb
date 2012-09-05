@@ -3,28 +3,47 @@ module Ripple
   # serialized form before it is stored in Riak.  You must register
   # a serializer that will perform the encryption.
   # @see Serializer
-  module Encryption
-    # Overrides the internal method to set the content-type to be
-    # encrypted.
-    def robject
-      @robject ||= Riak::RObject.new(self.class.bucket, key).tap do |obj|
-        obj.content_type = 'application/x-json-encrypted'
+  module Statistics
+    class Error < StandardError; end
+
+    module ClassMethods
+      def statistics_properties
+        @statistics_properties ||= {:average => [], :count => [], :sum => []}
+      end
+
+      [:average, :count, :sum].each do |operation|
+        define_method "property_#{operation}".to_sym do |value|
+          statistics_properties[operation] << value
+          define_singleton_method "#{value}_#{operation}".to_sym do
+            klass = "Ripple::Statistics::#{operation.to_s.capitalize}".constantize
+            klass.find("#{bucket_name}_#{value}_#{operation}").send(operation)
+          end
+        end
       end
     end
-    def update_robject
-      robject.key = key if robject.key != key
-      robject.content_type ||= 'application/x-json-encrypted'
-      robject.data = attributes_for_persistence
+
+    def self.included klass
+      if Ripple.config[:client_name].nil?
+        raise Ripple::Statistics::Error, "Missing client identifier. Please set client_name in your ripple.config file."
+      end
+      klass.extend ClassMethods
     end
 
-  after_save :update_statistics
+    def update_statistics
+      self.class.statistics_properties.each do |operation, values|
+        values.each do |value|
+          id    = "#{self.class.bucket_name}_#{value}_#{operation}"
+          klass = "Ripple::Statistics::#{operation.to_s.capitalize}".constantize
+          statistic = klass.find(id) || klass.new
+          statistic.key = id
+          statistic.update_with self.send(value)
+        end
+      end
+    end
 
-  def update_statistics
-    id = 'data_point_document_statistic'
-    statistic = StatisticDocument.find(id) || StatisticDocument.new
-    statistic.key = id
-    statistic.update_with self.value
-  end
-
+    def save
+      super
+      update_statistics
+    end
   end
 end

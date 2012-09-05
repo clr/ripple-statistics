@@ -1,4 +1,5 @@
 test:
   host: 127.0.0.1
-  http_port: 8091
+  http_port: 9000
   namespace: test_ns~
+  client_name: test

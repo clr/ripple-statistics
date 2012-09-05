@@ -1,5 +1,5 @@
 module Ripple
-  module Encryption
+  module Statistics
     class Migration
       # create log files in the tmp dir
       def initialize
@@ -16,7 +16,6 @@ module Ripple
 
       # finde only the encryptable models
       def models
-        Objects.constants.map{|c| "#{c}".constantize}.select{|c| c.include?(Ripple::Encryption)}
       end
 
       # cycle through all objects and save them
