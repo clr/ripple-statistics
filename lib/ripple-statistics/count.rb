@@ -32,5 +32,7 @@ module Ripple
         self.client_data = resolved
       end
     end
+
+    Count.bucket.allow_mult = true
   end
 end

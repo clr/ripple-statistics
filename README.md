@@ -21,20 +21,36 @@ Or install it yourself as:
 ## Overview
 
 
+## Known Issues
+
+These stats are currently additive only!  They do not yet take into
+account deleting an object.
+
+Map/Reduce will be necessary to seed these values for a running system,
+since these values are updated on a rolling basis only.
+
+
 ## Usage
 
-Include the gem in your Gemfile.
-
-    Ripple::Statistics
-
-Then include the Ripple::Statistics module in your document class:
+Include the gem in your Gemfile.  Then include the Ripple::Statistics module in your document class:
 
     class SomeDocument
       include Ripple::Document
       include Ripple::Statistics
-      property :message, String
+      property :message,    String
+      property :some_value, Float
+  
+      # now track some stats
+      property_average :some_value, :default => 0.0
+      property_sum     :some_value, :default => 0.0
+      property_count   :some_value, :default => 0
     end
 
+You now have access to the following methods:
+
+    SomeDocument.some_value_average
+    SomeDocument.some_value_sum
+    SomeDocument.some_value_count
 
 ## Running the Tests
 
